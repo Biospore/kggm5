@@ -91,11 +91,6 @@ GLuint initShaders(const char* vertex, const char* fragment)
 /************************************************************************/
 
 
-struct point3D
-{
-    double x, y, z;
-};
-
 struct bufferContainer
 {
     GLuint vbo_pos = 0;
@@ -118,20 +113,6 @@ struct vertex3D
 /************************************************************************/
 
 
-
-//
-//vertex3D data[4] = {
-//        {0, 0, 0},// 0, 0, 1, 1},
-//        {3, 0, 0},// 0, 1, 0, 1},
-//        {3, 0, 3},// 0, 0, 1, 1},
-//        {0, 0, 3}//, 0, 1, 0, 1}
-
-//        {0, 3, 0, 1, 0, 1, 1},
-//        {3, 3, 0, 1, 1, 0, 1},
-//        {3, 3, 3, 1, 0, 1, 1},
-//        {0, 3, 3, 1, 1, 0, 1}
-//};
-
 void initQuadBuffer(GLuint vbo, GLuint shaderAttribute, vertex3D (&data)[4])
 {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -151,95 +132,6 @@ void initColorBuffer(GLuint vbo, GLuint shaderAttribute, colorRGB (&colors)[4])
 
 /************************************************************************/
 
-struct prism
-{
-    point3D p0, p1, p2, p3, p4, p5, p6, p7;
-    void addX(double x)
-    {
-        p0.x += x;
-        p1.x += x;
-        p2.x += x;
-        p3.x += x;
-        p4.x += x;
-        p5.x += x;
-        p6.x += x;
-        p7.x += x;
-    }
-    void addY(double y)
-    {
-        p0.y += y;
-        p1.y += y;
-        p2.y += y;
-        p3.y += y;
-        p4.y += y;
-        p5.y += y;
-        p6.y += y;
-        p7.y += y;
-    }
-    void addZ(double z)
-    {
-        p0.z += z;
-        p1.z += z;
-        p2.z += z;
-        p3.z += z;
-        p4.z += z;
-        p5.z += z;
-        p6.z += z;
-        p7.z += z;
-    }
-};
-
-
-
-prism prism1;
-prism prism2;
-
-
-
-
-void drawPrism(prism prism0)
-{
-    glBegin(GL_QUADS);
-    // poly 0-1-2-3
-    glColor3f(0.5, 0.5, 1);
-    glVertex3d(prism0.p0.x, prism0.p0.y, prism0.p0.z);
-    glVertex3d(prism0.p1.x, prism0.p1.y, prism0.p1.z);
-    glVertex3d(prism0.p2.x, prism0.p2.y, prism0.p2.z);
-    glVertex3d(prism0.p3.x, prism0.p3.y, prism0.p3.z);
-    // poly 1-5-6-2
-    glColor3f(0.5, 1, 0.5);
-    glVertex3d(prism0.p1.x, prism0.p1.y, prism0.p1.z);
-    glVertex3d(prism0.p5.x, prism0.p5.y, prism0.p5.z);
-    glVertex3d(prism0.p6.x, prism0.p6.y, prism0.p6.z);
-    glVertex3d(prism0.p2.x, prism0.p2.y, prism0.p2.z);
-    // poly 5-6-7-4
-    glColor3f(1, 0.5, 0.5);
-    glVertex3d(prism0.p5.x, prism0.p5.y, prism0.p5.z);
-    glVertex3d(prism0.p6.x, prism0.p6.y, prism0.p6.z);
-    glVertex3d(prism0.p7.x, prism0.p7.y, prism0.p7.z);
-    glVertex3d(prism0.p4.x, prism0.p4.y, prism0.p4.z);
-    // poly 4-7-3-0
-    glColor3f(0.5, 1, 1);
-    glVertex3d(prism0.p4.x, prism0.p4.y, prism0.p4.z);
-    glVertex3d(prism0.p7.x, prism0.p7.y, prism0.p7.z);
-    glVertex3d(prism0.p3.x, prism0.p3.y, prism0.p3.z);
-    glVertex3d(prism0.p0.x, prism0.p0.y, prism0.p0.z);
-    // poly 2-6-7-3
-    glColor3f(1, 1, 0.5);
-    glVertex3d(prism0.p2.x, prism0.p2.y, prism0.p2.z);
-    glVertex3d(prism0.p6.x, prism0.p6.y, prism0.p6.z);
-    glVertex3d(prism0.p7.x, prism0.p7.y, prism0.p7.z);
-    glVertex3d(prism0.p3.x, prism0.p3.y, prism0.p3.z);
-    //poly 1-5-4-0
-    glColor3f(1, 0.5, 1);
-    glVertex3d(prism0.p1.x, prism0.p1.y, prism0.p1.z);
-    glVertex3d(prism0.p5.x, prism0.p5.y, prism0.p5.z);
-    glVertex3d(prism0.p4.x, prism0.p4.y, prism0.p4.z);
-    glVertex3d(prism0.p0.x, prism0.p0.y, prism0.p0.z);
-    glEnd();
-}
-
-
 
 /////////////////////////////////////////////////////////////////
 
@@ -256,21 +148,6 @@ GLfloat light0_diffuse[] = {1, 1, 1, 1};
 
 double rotate_y = 5;
 double rotate_x = 5;
-
-prism initPrism(prism prism0)
-{
-    prism0.p0 = {0, 0, 0};
-    prism0.p1 = {3, 0, 0};
-    prism0.p2 = {3, 0, 3};
-    prism0.p3 = {0, 0, 3};
-
-    prism0.p4 = {0, 3, 0};
-    prism0.p5 = {3, 3, 0};
-    prism0.p6 = {3, 3, 3};
-    prism0.p7 = {0, 3, 3};
-
-    return prism0;
-}
 
 
 void lighting()
