@@ -9,6 +9,7 @@
 using namespace std;
 
 const int WIDTH = 1000, HEIGHT = 1000;
+const int SHADOW_WIDTH = WIDTH*3, SHADOW_HEIGHT = HEIGHT*3;
 const char* vertexfp = "/home/biospore/Documents/kggm/go/vertex.glsl";
 const char* fragmentfp = "/home/biospore/Documents/kggm/go/fragment.glsl";
 
@@ -252,6 +253,7 @@ void display()
         gluLookAt(eye_pos[0], eye_pos[1], eye_pos[2], 0, 0, 0, up_pos[0], up_pos[1], up_pos[2]);
 //        glRotated(anglex, 1.0, 0.0, 0.0);
         glRotated(angley, 0.0, 1.0, 0.0);
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
         GLint shadowMapID = glGetUniformLocation(program0, "shadowMap");
         GLint finalMatrixID = glGetUniformLocation(program0, "finalMatrix");
         GLint depthBiasMatrix = glGetUniformLocation(program0, "depthBiasMatrix");
@@ -325,6 +327,7 @@ void display()
     glPopMatrix();
 //    gluLookAt(light0_direction[0], light0_direction[1], light0_direction[2], 0, 0, 0, up_pos[0], up_pos[1], up_pos[2]);
     glUseProgram(program0);
+    glViewport(0, 0, WIDTH, HEIGHT);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -342,7 +345,8 @@ void display()
 
 //    cout << "bias" << endl;
     glm::mat4 depthBiasMVP = biasMatrix * finalMatrix;
-
+//    glRotated(35, 1.0, 0.0, 0.0);
+//    glRotated(45, 0.0, 1.0, 0.0);
 
 //    for (int i = 0; i < 4; i++)
 //        for (int j = 0; j < 4; j++)
@@ -550,7 +554,7 @@ void initTexture()
 
     glGenTextures(1, &depthTexture);
     glBindTexture(GL_TEXTURE_2D, depthTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

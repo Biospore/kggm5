@@ -19,7 +19,7 @@ void main()
 {
 //    outputF = vec3(0,1,0);
     float visibility = 1.0;
-    float bias = 0.003;
+    float bias = 0.002;
 
 //    bias = clamp(bias, 0, 0.003);
 //    if (texture ( shadowMap, shadowCoord.xy ).z < shadowCoord.z - bias)
@@ -28,7 +28,7 @@ void main()
 //    }
     for (int i = 0; i < 4; i++)
     {
-        if ( texture( shadowMap, shadowCoord.xy + poissonDisk[i]/500.0 ).z  <  shadowCoord.z-bias ){
+        if ( texture( shadowMap, shadowCoord.xy + poissonDisk[i]/600.0 ).z  <  shadowCoord.z-bias ){
             visibility-=0.2;
           }
     }
