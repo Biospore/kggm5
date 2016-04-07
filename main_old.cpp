@@ -9,7 +9,8 @@
 using namespace std;
 
 const int WIDTH = 1000, HEIGHT = 1000;
-const int SHADOW_WIDTH = WIDTH*3, SHADOW_HEIGHT = HEIGHT*3;
+const int scale = 7;
+const int SHADOW_WIDTH = WIDTH*scale, SHADOW_HEIGHT = HEIGHT*scale;
 const char* vertexfp = "/home/biospore/Documents/kggm/go/vertex.glsl";
 const char* fragmentfp = "/home/biospore/Documents/kggm/go/fragment.glsl";
 
@@ -69,7 +70,7 @@ GLuint initShaders(const char* vertex, const char* fragment)
     GLint maxLength = 0;
 //    glGetShaderiv(vShader, GL_INFO_LOG_LENGTH​, &isCompiled);
     glGetShaderiv(fShader, GL_INFO_LOG_LENGTH, &maxLength);
-    cout << "fragment" << endl;
+    cout << fragment << endl;
     std::vector<GLchar> errorLog(maxLength);
     glGetShaderInfoLog(fShader, maxLength, &maxLength, &errorLog[0]);
     for (std::vector<GLchar>::iterator it = errorLog.begin(); it != errorLog.end(); it++)
@@ -78,7 +79,7 @@ GLuint initShaders(const char* vertex, const char* fragment)
     }
 
     glGetShaderiv(vShader, GL_INFO_LOG_LENGTH, &maxLength);
-    cout << "vertex" << endl;
+    cout << vertex << endl;
     std::vector<GLchar> errorLog2(maxLength);
     glGetShaderInfoLog(vShader, maxLength, &maxLength, &errorLog2[0]);
     for (std::vector<GLchar>::iterator it = errorLog2.begin(); it != errorLog2.end(); it++)
@@ -149,7 +150,7 @@ void initColorBuffer(GLuint vbo, GLuint shaderAttribute, colorRGB (&colors)[4])
 //float ambient[4] = {2.5, 2.5, 2.5, 1};
 GLfloat eye_pos[] = {0, 1, 0};
 GLfloat up_pos[] = {0, 0, 1};
-GLfloat center_pos[] = {0, 0, 0};
+//GLfloat center_pos[] = {0, 0, 0};
 //GLfloat material_diffuse[] = {1.0, 1.0, 1.0, 1.0};
 
 
@@ -244,11 +245,15 @@ void drawScene()
 GLuint depthTexture;
 
 //double anglex = 35;
-double angley = 10;
-
+double angley = 30;
+//
 void display()
 {
     glPushMatrix();
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(-11,16384);
 
         gluLookAt(eye_pos[0], eye_pos[1], eye_pos[2], 0, 0, 0, up_pos[0], up_pos[1], up_pos[2]);
 //        glRotated(anglex, 1.0, 0.0, 0.0);
@@ -324,6 +329,9 @@ void display()
 
     drawScene();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_POLYGON_OFFSET_FILL);
+
     glPopMatrix();
 //    gluLookAt(light0_direction[0], light0_direction[1], light0_direction[2], 0, 0, 0, up_pos[0], up_pos[1], up_pos[2]);
     glUseProgram(program0);
@@ -333,6 +341,7 @@ void display()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0,0,0,1);
     glClearDepth(1);
+
 
 
     glActiveTexture(GL_TEXTURE1);
@@ -354,6 +363,7 @@ void display()
 
     glUniformMatrix4fv(depthBiasMatrix, 1, GL_FALSE, &depthBiasMVP[0][0]);
     drawScene();
+
     glUseProgram(0);
 
     glutSwapBuffers();
@@ -417,59 +427,59 @@ void createCube(vertex3D point000, vertex3D pointxyz)
 {
     colorRGB color0[4] =
             {
-                    {0.5, 0.5, 1},
-                    {0.5, 0.5, 1},
-                    {0.5, 0.5, 1},
-                    {0.5, 0.5, 1}
+                    {0.7, 0.4, 0.4},
+                    {0.7, 0.4, 0.4},
+                    {0.7, 0.4, 0.4},
+                    {0.7, 0.4, 0.4}
             };
 
     colorRGB color1[4] =
             {
-                    {0.5, 1, 0.5},
-                    {0.5, 1, 0.5},
-                    {0.5, 1, 0.5},
-                    {0.5, 1, 0.5}
+                    {0.4, 0.7, 0.4},
+                    {0.4, 0.7, 0.4},
+                    {0.4, 0.7, 0.4},
+                    {0.4, 0.7, 0.4}
             };
 
     colorRGB color2[4] =
             {
-                    {1, 0.5, 0.5},
-                    {1, 0.5, 0.5},
-                    {1, 0.5, 0.5},
-                    {1, 0.5, 0.5}
+                    {0.4, 0.4, 0.7},
+                    {0.4, 0.4, 0.7},
+                    {0.4, 0.4, 0.7},
+                    {0.4, 0.4, 0.7}
 
             };
 
     colorRGB color3[4] =
             {
-                    {0.5, 1, 1},
-                    {0.5, 1, 1},
-                    {0.5, 1, 1},
-                    {0.5, 1, 1}
+                    {0.4, 0.4, 0.4},
+                    {0.4, 0.4, 0.4},
+                    {0.4, 0.4, 0.4},
+                    {0.4, 0.4, 0.4}
             };
 
     colorRGB color4[4] =
             {
-                    {1, 1, 0.5},
-                    {1, 1, 0.5},
-                    {1, 1, 0.5},
-                    {1, 1, 0.5}
+                    {0.4, 0.4, 0.4},
+                    {0.4, 0.4, 0.4},
+                    {0.4, 0.4, 0.4},
+                    {0.4, 0.4, 0.4}
             };
 
     colorRGB color5[4] =
             {
-                    {1, 0.5, 1},
-                    {1, 0.5, 1},
-                    {1, 0.5, 1},
-                    {1, 0.5, 1}
+                    {0.4, 0.4, 0.4},
+                    {0.4, 0.4, 0.4},
+                    {0.4, 0.4, 0.4},
+                    {0.4, 0.4, 0.4}
             };
 
     vertex3D quad0[4] =
             {
-                    {point000.x, point000.y, point000.z},
-                    {pointxyz.x, point000.y, point000.z},
+                    {point000.x, pointxyz.y, point000.z},
                     {pointxyz.x, pointxyz.y, point000.z},
-                    {point000.x, pointxyz.y, point000.z}
+                    {pointxyz.x, point000.y, point000.z},
+                    {point000.x, point000.y, point000.z},
             };
 
     vertex3D quad1[4] =
@@ -481,11 +491,10 @@ void createCube(vertex3D point000, vertex3D pointxyz)
             };
     vertex3D quad2[4] =
             {
-                    {point000.x, point000.y, point000.z},
-                    {point000.x, pointxyz.y, point000.z},
+                    {point000.x, point000.y, pointxyz.z},
                     {point000.x, pointxyz.y, pointxyz.z},
-                    {point000.x, point000.y, pointxyz.z}
-
+                    {point000.x, pointxyz.y, point000.z},
+                    {point000.x, point000.y, point000.z}
             };
     vertex3D quad3[4] =
             {
@@ -512,9 +521,9 @@ void createCube(vertex3D point000, vertex3D pointxyz)
     createQuad(quad1, color1);
     createQuad(quad2, color2);
 
-    createQuad(quad3, color3);
-    createQuad(quad4, color4);
-    createQuad(quad5, color5);
+    createQuad(quad3, color0);
+    createQuad(quad4, color2);
+    createQuad(quad5, color1);
 }
 
 void initObjects()
@@ -528,17 +537,21 @@ void initObjects()
 
     vertex3D quad0[4] =
             {
-                    {-10, -1.01f, -10},
-                    {+10, -1.01f, -10},
+                    {-10, -1.01f, +10},
                     {+10, -1.01f, +10},
-                    {-10, -1.01f, +10}
+                    {+10, -1.01f, -10},
+                    {-10, -1.01f, -10}
+
+
+
+
             };
     colorRGB color0[4] =
             {
-                    {0.3, 0.7, 0.4},
-                    {0.3, 0.7, 0.4},
-                    {0.3, 0.7, 0.4},
-                    {0.3, 0.7, 0.4}
+                    {0.5, 0.5, 0.5},
+                    {0.5, 0.5, 0.5},
+                    {0.5, 0.5, 0.5},
+                    {0.5, 0.5, 0.5}
             };
 
     createQuad(quad0, color0);
@@ -554,7 +567,7 @@ void initTexture()
 
     glGenTextures(1, &depthTexture);
     glBindTexture(GL_TEXTURE_2D, depthTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
