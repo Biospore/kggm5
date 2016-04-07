@@ -1,6 +1,6 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
-//#include <glm/glm.hpp>
+#include <glm/glm.hpp>
 #include <vector>
 
 #include <iostream>
@@ -12,12 +12,15 @@ const int WIDTH = 1000, HEIGHT = 1000;
 const char* vertexfp = "/home/biospore/Documents/kggm/go/vertex.glsl";
 const char* fragmentfp = "/home/biospore/Documents/kggm/go/fragment.glsl";
 
-GLfloat light0_direction[] = {0, 10, 5, 0};
+const char* texvertexfp = "/home/biospore/Documents/kggm/go/vertex_texture.glsl";
+const char* texfragmentfp = "/home/biospore/Documents/kggm/go/fragment_texture.glsl";
+
+//GLfloat light0_direction[] = {0, 10, 5, 0};
 /************************************************************************/
 
-GLuint vShader;
-GLuint fShader;
 
+
+GLuint program0;
 GLuint program1;
 
 
@@ -40,6 +43,8 @@ char* readShaderSource(const char *name)
 GLuint initShaders(const char* vertex, const char* fragment)
 {
 
+    GLuint vShader;
+    GLuint fShader;
 
     GLuint program = glCreateProgram();
 
@@ -116,17 +121,17 @@ struct vertex3D
 void initQuadBuffer(GLuint vbo, GLuint shaderAttribute, vertex3D (&data)[4])
 {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(vertex3D), data, GL_STATIC_DRAW);
-    glVertexAttribPointer(shaderAttribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(shaderAttribute);
+    glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(float) *3, data, GL_STATIC_DRAW);
+    glVertexAttribPointer(shaderAttribute, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+//    glEnableVertexAttribArray(shaderAttribute);
 }
 
 void initColorBuffer(GLuint vbo, GLuint shaderAttribute, colorRGB (&colors)[4])
 {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(colorRGB), colors, GL_STATIC_DRAW);
-    glVertexAttribPointer(shaderAttribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(shaderAttribute);
+    glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(float) *3, colors, GL_STATIC_DRAW);
+    glVertexAttribPointer(shaderAttribute, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+//    glEnableVertexAttribArray(shaderAttribute);
 }
 
 
@@ -141,7 +146,9 @@ void initColorBuffer(GLuint vbo, GLuint shaderAttribute, colorRGB (&colors)[4])
 
 
 //float ambient[4] = {2.5, 2.5, 2.5, 1};
-GLfloat light0_diffuse[] = {1, 1, 1, 1};
+GLfloat eye_pos[] = {0, 1, 0};
+GLfloat up_pos[] = {0, 0, 1};
+GLfloat center_pos[] = {0, 0, 0};
 //GLfloat material_diffuse[] = {1.0, 1.0, 1.0, 1.0};
 
 
@@ -156,52 +163,193 @@ void lighting()
     glEnable(GL_COLOR_MATERIAL);
     glPushMatrix();
     glLoadIdentity();
-    glLightfv(GL_LIGHT0, GL_POSITION, light0_direction);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
+//    glLightfv(GL_LIGHT0, GL_POSITION, light0_direction);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, eye_pos);
     glPopMatrix();
 }
 
 vector<bufferContainer> buffers;
 
+glm::mat4 biasMatrix = {
+        0.5, 0.0, 0.0, 0.0,
+        0.0, 0.5, 0.0, 0.0,
+        0.0, 0.0, 0.5, 0.0,
+        0.5, 0.5, 0.5, 1.0
+};
 
-void display()
+
+GLuint depthtex;
+//GLuint FramebufferName = 0;
+GLuint FramebufferName = 0;
+
+void initDepthTexture()
 {
+    glGenFramebuffers(1, &FramebufferName);
+    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 
-    glUseProgram(program1);
-//    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearDepth(1);
-//    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glGenTextures(1, &depthtex);
+    glBindTexture(GL_TEXTURE_2D, depthtex);
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT16, WIDTH, HEIGHT, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthtex, 0);
+
+    glDrawBuffer(GL_NONE);
+//
+//    glActiveTexture(GL_TEXTURE0);
+//    glGenTextures(1, &depthtex);
+//    glBindTexture(GL_TEXTURE_2D, depthtex);
+//    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGB, WIDTH, HEIGHT);
+////    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WIDTH, HEIGHT, imageFormat, type, data);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+}
+
+GLint shader_matrix;
+glm::mat4 shaderMatrix;
+
+void initDepth()
+{
+     shader_matrix = glGetUniformLocation(program1, "lightMatrix");
+}
+
+void drawScene()
+{
     for (vector<bufferContainer>::iterator it = buffers.begin(); it != buffers.end(); it++)
     {
-        GLuint vbo = it->vbo_pos;
-        GLuint shaderAttribute = it->shaderArg_pos;
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glVertexAttribPointer(shaderAttribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        glEnableVertexAttribArray(shaderAttribute);
-
-        vbo = it->vbo_color;
-        shaderAttribute = it->shaderArg_color;
+        GLuint vbo1 = it->vbo_pos;
+        GLuint shaderAttribute1 = it->shaderArg_pos;
+        glBindBuffer(GL_ARRAY_BUFFER, vbo1);
+        glVertexAttribPointer(shaderAttribute1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glEnableVertexAttribArray(shaderAttribute1);
+//
+        GLuint vbo = it->vbo_color;
+        GLuint shaderAttribute = it->shaderArg_color;
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glVertexAttribPointer(shaderAttribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
         glEnableVertexAttribArray(shaderAttribute);
         glDrawArrays(GL_QUADS, 0, 4);
+
+        glDisableVertexAttribArray(shaderAttribute1);
+        glDisableVertexAttribArray(shaderAttribute);
     }
 
-//    glDrawArrays(GL_QUADS, 4, 8);
+}
 
+GLuint depthTexture;
+
+//double anglex = 35;
+double angley = 10;
+
+void display()
+{
+    glPushMatrix();
+
+        gluLookAt(eye_pos[0], eye_pos[1], eye_pos[2], 0, 0, 0, up_pos[0], up_pos[1], up_pos[2]);
+//        glRotated(anglex, 1.0, 0.0, 0.0);
+        glRotated(angley, 0.0, 1.0, 0.0);
+        GLint shadowMapID = glGetUniformLocation(program0, "shadowMap");
+        GLint finalMatrixID = glGetUniformLocation(program0, "finalMatrix");
+        GLint depthBiasMatrix = glGetUniformLocation(program0, "depthBiasMatrix");
+//        GLint lightMatrix = glGetUniformLocation(shaderProgram2, "lightMatrix");
+
+//        projectionMatrix = perspective(radians(45.0f), d.w/d.h, 0.1f, 100.0f);
+//        projectionMatrixLight = ortho(-10.0f,10.0f,-10.0f,10.0f, -5.0f, 30.0f);
+//
+//
+//        viewMatrix = lookAt(vec3(-17,25,-17), vec3(0,0,0), vec3(0,1,0));
+//        viewMatrixLight = lookAt(vec3(10,10,10), vec3(0,0,0), vec3(0,1,0));
+//    gluLookAt(0,0,0, 0,0,0 ,0,0,0);
+//    glUniformMatrix4fv(shader_matrix, 1, GL_FALSE, &shaderMatrix[0][0]);
+        GLfloat mv[16];
+        glGetFloatv(GL_MODELVIEW_MATRIX, mv);
+        glm::mat4 matmv;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                matmv[i][j] = mv[i * 4 + j];
+//            cout << matmv[i][j] << ' ';
+            }
+//        cout << endl;
+        }
+//    cout << endl;
+
+        GLfloat pj[16];
+        glGetFloatv(GL_PROJECTION_MATRIX, pj);
+        glm::mat4 matpj;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                matpj[i][j] = pj[i * 4 + j];
+//            cout << matpj[i][j] << ' ';
+            }
+//        cout << endl;
+        }
+//    cout << endl;
+
+
+
+
+        glm::mat4 finalMatrix = matpj * matmv;
+//    for (int i = 0; i < 4; i++)
+//        for (int l = 0; l < 4; l++)
+//            cout << depthMVP[i][l] << ' ';
+
+
+        glUniformMatrix4fv(finalMatrixID, 1, GL_FALSE, &finalMatrix[0][0]);
+
+//    GLint depthMVPI = glGetUniformLocation(program1, "depthMVP");
+//    glUniformMatrix4fv(depthMVPI, 1, GL_FALSE, &depthMVP[0][0]);
+
+
+
+
+        glUseProgram(program1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 //    lighting();
+//    glGenTextures(1, &depthtex);
+//    glBindTexture(GL_TEXTURE_BUFFER, depthtex);
+//    glActiveTexture(GL_TEXTURE0);
 
-//    drawPrism(prism1);
-//    drawPrism(prism2);
-//    glBegin(GL_QUADS);
-//    glColor3f(1, 1, 1);
-//    glVertex3f(10.0f, -0.01f, 10.0f);
-//    glVertex3f(-10.0f, -0.01f, 10.0f);
-//    glVertex3f(-10.0f, -0.01f, -10.0f);
-//    glVertex3f(10.0f, -0.01f, -10.0f);
-//    glEnd();
 
+
+
+
+//    glViewport(0, 0, WIDTH, HEIGHT);
+
+
+    drawScene();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glPopMatrix();
+//    gluLookAt(light0_direction[0], light0_direction[1], light0_direction[2], 0, 0, 0, up_pos[0], up_pos[1], up_pos[2]);
+    glUseProgram(program0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0,0,0,1);
+    glClearDepth(1);
+
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glUniform1i(shadowMapID, 1);
+//    gluLookAt(light0_direction[0], light0_direction[1], light0_direction[2], 0, 0, 0, 0, 0, 0.1);
+//    gluLookAt(eye_pos[0], eye_pos[1], eye_pos[2], 0, 0, 0, up_pos[0], up_pos[1], up_pos[2]);
+//    glRotated(anglex, 1.0, 0.0, 0.0);
+//    glRotated(angley, 0.0, 1.0, 0.0);
+
+//    cout << "bias" << endl;
+    glm::mat4 depthBiasMVP = biasMatrix * finalMatrix;
+
+
+//    for (int i = 0; i < 4; i++)
+//        for (int j = 0; j < 4; j++)
+//            cout << depthBiasMVP[i][j] << ' ';
+
+    glUniformMatrix4fv(depthBiasMatrix, 1, GL_FALSE, &depthBiasMVP[0][0]);
+    drawScene();
     glUseProgram(0);
 
     glutSwapBuffers();
@@ -370,8 +518,8 @@ void initObjects()
     vertex3D point0 = {-1, -1, -1};
     vertex3D point1 = {+1, +1, +1};
     createCube(point0, point1);
-    vertex3D point2 = {2, -1, -1};
-    vertex3D point3 = {4, +1, +1};
+    vertex3D point2 = {-1, -1, 2};
+    vertex3D point3 = {+1, 1, 3};
     createCube(point2, point3);
 
     vertex3D quad0[4] =
@@ -390,8 +538,42 @@ void initObjects()
             };
 
     createQuad(quad0, color0);
+
+
 }
 
+
+void initTexture()
+{
+    glGenFramebuffers(1, &FramebufferName);
+    glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+
+    glGenTextures(1, &depthTexture);
+    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, WIDTH, HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glDrawBuffer(GL_NONE);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+}
+
+void cleanUp()
+{
+    for (vector<bufferContainer>::iterator it = buffers.begin(); it != buffers.end(); it++)
+    {
+        GLuint vbo1 = it->vbo_pos;
+        glDeleteBuffers(1, &vbo1);
+        vbo1 = it->vbo_color;
+        glDeleteBuffers(1, &vbo1);
+    }
+    glDeleteProgram(program0);
+    glDeleteProgram(program1);
+    glDeleteFramebuffers(1, &FramebufferName);
+    glDeleteTextures(1, &depthTexture);
+}
 
 int main(int argc, char **argv)
 {
@@ -406,8 +588,11 @@ int main(int argc, char **argv)
 
     // shader init
     glewInit();
-    program1 = initShaders(vertexfp, fragmentfp);
+    program0 = initShaders(vertexfp, fragmentfp);
+    program1 = initShaders(texvertexfp, texfragmentfp);
     initObjects();
+    initTexture();
+//    initDepthTexture();
 
 
 
@@ -432,10 +617,13 @@ int main(int argc, char **argv)
     glRotated(45, 0.0, 1.0, 0.0);
 //
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_PROGRAM_POINT_SIZE);
-////    glEnable(GL_LIGHTING);
+//    glEnable(GL_ALPHA_TEST);
+//    glEnable(GL_PROGRAM_POINT_SIZE);
+//    glEnable(GL_CULL_FACE);
+//    glEnable(GL_LIGHTING);
 //
-    glutSpecialFunc(specialKeys);
+//    glutSpecialFunc(specialKeys);
     glutMainLoop();
+    cleanUp();
     return 0;
 }
