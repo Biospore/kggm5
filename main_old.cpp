@@ -245,7 +245,7 @@ void drawScene()
 GLuint depthTexture;
 
 //double anglex = 35;
-double angley = 30;
+double angley = 90;
 //
 void display()
 {
